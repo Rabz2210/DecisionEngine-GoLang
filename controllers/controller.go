@@ -60,7 +60,10 @@ func ProcessData(resp http.ResponseWriter, req *http.Request) {
 		}
 		log.Printf("Rejection Reason: %v,Overriden %v\n", decisionData.RejectionReason, decisionData.Overriden)
 		resp.WriteHeader(http.StatusOK)
-		json.NewEncoder(resp).Encode(FinalStatus)
+		err := json.NewEncoder(resp).Encode(FinalStatus)
+		if err != nil {
+			log.Println("Error Forming Response message")
+		}
 
 	default:
 		log.Println("error no 404")
@@ -105,27 +108,39 @@ func ApprovedList(resp http.ResponseWriter, req *http.Request) {
 	st, flag := ValidateReqApprovdList(req, &ls)
 	if !flag {
 		resp.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(resp).Encode(st)
+		err := json.NewEncoder(resp).Encode(st)
+		if err != nil {
+			log.Println("Error forming response structure")
+		}
 		return
 	}
 	switch req.Method {
 	case http.MethodGet:
 		res := Lc.Get(ls.PNumbers[0])
-		json.NewEncoder(resp).Encode(res)
+		err := json.NewEncoder(resp).Encode(res)
+		if err != nil {
+			log.Println("Error Forming Response Structure")
+		}
 		return
 	case http.MethodPatch:
 		for i := 0; i < len(ls.PNumbers); i++ {
 			Lc.Add(ls.PNumbers[i])
 		}
 		resp.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(resp).Encode("List Updated")
+		err := json.NewEncoder(resp).Encode("List Updated")
+		if err != nil {
+			log.Println("Error Forming Response Structure")
+		}
 		return
 	case http.MethodDelete:
 		for i := 0; i < len(ls.PNumbers); i++ {
 			Lc.Delete(ls.PNumbers[i])
 		}
 		resp.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(resp).Encode("List Updated")
+		err := json.NewEncoder(resp).Encode("List Updated")
+		if err != nil {
+			log.Println("Error Forming Response Structure")
+		}
 		return
 	default:
 		log.Println("error no 404")
