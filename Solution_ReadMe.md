@@ -102,3 +102,8 @@ To hold the list of pre-approved phone numbers and to provide the ability to upd
 
 Used to determin the port No and active strategy version as explained in the Strategy section. 
 
+# IMP INSTRUCTION FOR STARTUP
+It is crucial for the application to have a well formated strategy file with checks defined in pool of checks for the application to startup.
+
+Also Kinldy determine the active strategy version in the properties file
+
