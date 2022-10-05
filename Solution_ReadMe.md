@@ -1,6 +1,9 @@
 # Solution : Kindly Read Me!!!
 
-Really enjoyed working on the project. It was an interesting assessment to take. Given the fact that I had just started with GoLang and had written my first "Hello World" in Go just a week ago. after receiving this, I have learnt a lot in a week. Lets jump right into the solution. The entire project is designed with keeping modularity in mind. Also to enable faster changes and more controll in the hands of business/Analyst teams.
+Really enjoyed working on the project. It was an interesting assessment to take. Given the fact that I had just started with GoLang and had written my first "Hello World" in Go just a week ago, after receiving this. I have learnt a lot in a week. Lets jump right into the solution. The entire project is designed with keeping modularity in mind. Also to enable faster changes and more controll in the hands of business/Analyst teams.
+
+
+You might find areas to improve this Given my introductory knowledge of Go  , I am open to discussion and feedback. I believe with a  bit of more hands on with the language the solution can be further polished.
 
 # Components
 
