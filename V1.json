@@ -1,0 +1,17 @@
+{
+  "IncomeCheck": {
+    "Income": "100000"
+  },
+  "AgeCheck": {
+    "Age": "18"
+  },
+  "CreditRiskCheck": {
+    "NoOfCards": "3"
+  },
+  "PoliticallyExposed": {
+    "Exposed": "false"
+  },
+  "AcceptedAreaCodes": {
+    "AreaCodes": "0,2,5,8"
+  }
+}

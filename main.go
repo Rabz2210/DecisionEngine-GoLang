@@ -12,10 +12,10 @@ import (
 
 	env "github.com/joho/godotenv"
 
-	"github.com/honestbank/tech_assignment_fullstack_engineer/controllers"
+	"github.com/honestbank/tech-assignment-backend-engineer/controllers"
 )
 
-const envFile = ".env"
+const envFile = "Properties.env"
 
 var loadEnv = env.Load
 
@@ -32,7 +32,7 @@ func run() (s *http.Server) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/process", controllers.ProcessData)
-
+	mux.HandleFunc("/ApproveList", controllers.ApprovedList)
 	s = &http.Server{
 		Addr:           port,
 		ReadTimeout:    10 * time.Second,
@@ -52,6 +52,11 @@ func run() (s *http.Server) {
 
 func main() {
 	s := run()
+	strategy, err := os.LookupEnv("StrategyVersion")
+	if !err {
+		log.Fatal("Strategy Not Speicified,")
+	}
+	controllers.InitializeCheck(strategy)
 	quit := make(chan os.Signal)
 	// kill (no param) default send syscall.SIGTERM
 	// kill -2 is syscall.SIGINT
