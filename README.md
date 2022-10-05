@@ -1,135 +1,112 @@
-x# Honest Backend Engineer Technical Assessment
+# Solution : Kindly Read Me!!!
 
->
-> 🤓 This repository contains a technical assessment to be used by candidates for the Backend Engineer position at Honest.
->
+Really enjoyed working on the project. It was an interesting assessment to take. Given the fact that I had just started with GoLang and had written my first "Hello World" in Go just a week ago, after receiving this. I have learnt a lot in a week. Lets jump right into the solution. The entire project is designed with keeping modularity in mind. Also to enable faster changes and more controll in the hands of business/Analyst teams.
 
-## Objective
 
-Welcome to Honest, and thank you for taking the time to take part in our recruitment process. We're working hard to make
-this a transparent, inclusive and positive process that lets everyone be their best (and have fun!) If you have any questions
-or concerns please don't hesitate to raise them with your interviewers, who will be more than happy to help 🙂
+You might find areas to improve this Given my introductory knowledge of Go  , I am open to discussion and feedback. I believe with a  bit of more hands on with the language the solution can be further polished.
 
-For more information about our recruitment process please see our public [Honest Engineering Recruitment Process](https://www.notion.so/honestbank/Honest-Engineering-Recruitment-Process-0ddc3af604c14c6eba20399374edfd47)
-page.
+# Components
 
-### Disclaimer
+- Pool of checks
+- Strategy Loader and Strategy File
+- Check Constructor
+- API Controllers
+- Cache
+- Properties File
 
-The scenario below is entirely fictitious and any resemblance to characters real or imaginary is purely coincidental. Please
-don't sue us!
+## Pool Of Checks
 
-We will not use your code submission for any purpose other than evaluating your fit for our team. No engineers were 
-harmed during the creation of this technical assessment ✌️.
+Every eligibility check is implemented as a standone check. Thus all modular checks are kept under one package (hence Pool of checks) and implement a common interface. Creating a pool of checks has two distinct advantages
 
-## Assessment
+- **Code Reusability**
+- **Mix-N-Match**
 
-### Background
+The attributes/parameters of these checks
 
-An engineer on our team started work on a Decision Engine to approve/decline credit card applicants. However, they have
-been unable to complete the project. Your task is to help complete the project, and improve the overall code quality as
-you see fit.
 
----
+> age in case of AgeCheck, income in case of IncomeCheck
 
-### Requirements
+are configurable and thus each check in this pool just holds the logical part of it, logic around threshold.  The threashold of that logic is completely configurable.
 
-Your task is to add rules as specified
-and have the engine return "approved" or "declined" for the data provided. The engine should be able to be triggered by
-a POST request and must handle errors gracefully.
+## Strategy File
 
-1. Implement a `POST` HTTP endpoint that:
 
-   * Receives [a request with JSON body](#request-body).
+A **Strategy** is a set of rules/checks that determine the eligibility of the customer. There can be more than one strategies. Each strategy contains a set of checks from the **pool of checks** along with the configurable thresholds . A strategy is defined in a file known as **Strategy File**.
+in our solution we have just one strategy V1.
+**It is encouraged to create more than one strategy of diffeerent checks or paramter thresholds to undertand the rejection/acceptance rate. Also this promotes A/B Testing.**
 
-   * Runs through the [Decision Engine Rules](#decision-rules).
+V1.json
 
-   * Returns [a response with JSON body](#response-body):
+    {
+    "IncomeCheck": {
+    "Income": "100000"},
+    "AgeCheck": {
+    "Age": "18"},
+    "CreditRiskCheck": {
+    "NoOfCards": "3"},
+    "PoliticallyExposed": {
+    "Exposed": "false"},
+    "AcceptedAreaCodes": {
+    "AreaCodes": "0,2,5,8"}
+    }
+It is not necessary to maintain these strategies in a file, we can put these up in a Document Oriented Db as well and read it from there. For the sake and simplicity of this solution I have decided to read from a file.
 
-     * status = `approved` if all rules are passed.
+## Strategy Loader
 
-     * status = `declined` if any rules are failed.
+As the name suggests, The task of the Strategy loader is to load a strategy based on the active version of strategy which is passed to it. This active version of strategy is configured in properties file. **The Strategy loader then informs the Check Constructor, what are all the check objects in needs to create.**
+This happens only once during the system startup time.
 
-1. Handle errors gracefully, without stopping the process.
+## Check Constructor
 
-### Specifications
+Every Check present in the system has to be configured with Check Constructor. **The task of this component is to create objects at runime and to initialize there threshold parameters as well**. It is fed by the Strategy Loader about the objects to create.Again Once  these objects are created at the system startup, we keep using them untill and unless there is a change in the strategy, which would anyway require an application restart.
 
-#### Request Body
+## API Controllers
 
-| Fields                   | Type        |
-| -----------              | ----------- |
-| income                   | number      |
-| number_of_credit_cards   | number      |
-| age                      | number      |
-| politically_exposed      | bool        |
-| job_industry_code        | string      |
-| phone_number             | string      |
+To Interact with the Decision Engine and to meet the business requirements, there are 2 controllers provided.
+1.
 
-##### Example
+`POST /process`
 
-```json
-{
-  "income": 82428,
-  "number_of_credit_cards": 3,
-  "age": 9,
-  "politically_exposed": true,
-  "job_industry_code": "2-930 - Exterior Plants",
-  "phone_number": "486-356-0375"
-}
-```
+Body:
 
-#### Response Body
+`{
+"income": 213383,
+"number_of_credit_cards": 3,
+"age": 36,
+"politically_exposed": false,
+"job_industry_code": "10-200 - Louvers and Vents",
+"phone_number": "114-183-5760"
+}`
 
-| Fields                   | Type        |
-| -----------              | ----------- |
-| status                   | string      |
+This is the main controller  which takes in customer paramters and returns the application status.
 
-##### Example
+2.
 
-###### Approved:
+`PATCH /ApproveList`
 
-```json
-{
-  "status": "approved"
-}
-```
+Controller to update the list of Pre-Approved phone numbers and add to it for overriding decision
 
-###### Declined:
+`DELETE /ApproveList`
 
-```json
-{
-  "status": "declined"
-}
-```
+Controller to update the list of Pre-Approved phone numbers and add to remove from it
+The body of both these controllers is same
 
-#### Decision Rules
+`{"phone_numbers":["41-759-8127","114-183-5760"]}`
 
-The application is approved if it evaluates as `true` on the following rules:
+You can add or remove multiple phone numbers in one go from the list.
 
-1. The applicant must earn more than 100000.
-1. The applicant must be at least 18 years old.
-1. The applicant must not hold more than 3 credit cards and their `credit_risk_score` must be `LOW`.
-1. The applicant must not be involved in any political activities (must not be a Politically Exposed Person or PEP).
-1. The applicant's phone number must be in an area that is allowed to apply for this product. The area code is denoted by first digit of phone number. The allowed area codes are `0`, `2`, `5`, and `8`.
-1. A pre-approved list of phone numbers should cause the application to be automatically approved without evaluation of the above rules. This list must be able to be updated at runtime without needing to restart the process.
+Regarding the security of this api, Along with  authenticating it using an authentication token, we can also configure the Gateway server using ngnix.conf file to allow access to this api only for requests comming from within VPC
+# Cache
 
-#### External Data Sources
+To hold the list of pre-approved phone numbers and to provide the ability to update it at runtime without restarting the server, we are using an in-memory cache. This is thread safe implementation of map using RW locks to support Concurrency. We could have used a DB or a third party in-memory cache, but being a new gopher , I decided to keep it simple. Plus it does the trick.
 
-Values for the `credit_risk_score` and `aml_score` fields can be retrieved by calling the existing functions in the provided `risk` module.
 
-## Evaluation Criteria
+## Properties File
 
-1. Problem Understanding
-1. Problem Solving
-1. Testing
-1. Effective Architecture/Design
+Used to determin the port No and active strategy version as explained in the Strategy section. 
 
-## Submission Instructions
+# IMP INSTRUCTION FOR STARTUP
+It is crucial for the application to have a well formated strategy file with checks defined in pool of checks for the application to startup.
 
-* Create a new branch, check it out and add commits to that branch.
-* Once you're done with the assessment create a patch onto `main` - to do this, run the following command:
+Also Kinldy determine the active strategy version in the properties file
 
-  ```shell
-  > git format-patch main
-  ```
-
-* The above command will produce some `.patch` files, simply archive them (ZIP, RAR, tarballs are all accepted).
